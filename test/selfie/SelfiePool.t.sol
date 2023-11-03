@@ -7,7 +7,7 @@ import {SimpleGovernance, SelfiePool} from "../../src/selfie/SelfiePool.sol";
 import "../../src/DamnValuableTokenSnapshot.sol";
 import "./SelfiePoolAttacker.sol";
 
-contract SimplePoolTest is Test{
+contract SimplePoolTest is Test {
     uint256 constant TOKEN_INITIAL_SUPPLY = 2_000_000e18;
     uint256 constant TOKENS_IN_POOL = 1_500_000e18;
     Util util = new Util();
@@ -18,7 +18,7 @@ contract SimplePoolTest is Test{
     SimpleGovernance governance;
     SelfiePool pool;
 
-    function setUp() public{
+    function setUp() public {
         address payable[] memory users = util.createUsers(2);
         deployer = users[0];
         player = users[1];
@@ -37,18 +37,14 @@ contract SimplePoolTest is Test{
         assertEq(pool.flashFee(address(token), 0), 0);
     }
 
-    function testExploit() public{
+    function testExploit() public {
         /**CODE YOUR SOLUTION HERE**/
         vm.startPrank(player);
-        SelfiePoolAttacker attacker = new SelfiePoolAttacker(address(pool), address(governance), address(token));
-        attacker.attack(TOKENS_IN_POOL);
-        vm.warp(block.timestamp + 2 days);
-        attacker.executeAction();
         vm.stopPrank();
         validation();
     }
 
-    function validation() public{
+    function validation() public {
         assertEq(token.balanceOf(address(player)), TOKENS_IN_POOL);
         assertEq(token.balanceOf(address(pool)), 0);
     }

@@ -35,12 +35,12 @@ contract UnstoppableTest is Test {
         vault = new UnstoppableVault(ERC20(token), deployer, deployer);
 
         // vm label
-        vm.label(address(token),"DVT Token");
-        vm.label(address(vault),"UnstoppableVault");
+        vm.label(address(token), "DVT Token");
+        vm.label(address(vault), "UnstoppableVault");
 
-        vm.label(address(deployer),"deployer");
-        vm.label(address(player),"player");
-        vm.label(address(someUser),"someUser");
+        vm.label(address(deployer), "deployer");
+        vm.label(address(player), "player");
+        vm.label(address(someUser), "someUser");
 
         // transfer token to vault
         token.approve(address(vault), TOKENS_IN_VAULT);
@@ -56,7 +56,10 @@ contract UnstoppableTest is Test {
 
         // transfer token to player
         token.transfer(address(player), INITIAL_PLAYER_TOKEN_BALANCE);
-        assertEq(token.balanceOf(address(player)), INITIAL_PLAYER_TOKEN_BALANCE);
+        assertEq(
+            token.balanceOf(address(player)),
+            INITIAL_PLAYER_TOKEN_BALANCE
+        );
 
         // possible to execute flashloan
         vm.startPrank(someUser);
@@ -65,17 +68,13 @@ contract UnstoppableTest is Test {
         vm.stopPrank();
     }
 
-    function testExploit() public{
+    function testExploit() public {
         /** CODE YOUR SOLUTION HERE */
         vm.startPrank(player);
-        token.transfer(address(vault), 1);
-        vm.stopPrank();
-        /* */
-        vm.expectRevert();
         validation();
     }
 
-    function validation() internal{
+    function validation() internal {
         vm.startPrank(someUser);
         receiverUnstoppable.executeFlashLoan(100e18);
         vm.stopPrank();

@@ -8,7 +8,7 @@ import "../../src/the-rewarder/FlashLoanerPool.sol";
 import {TheRewarderPool, RewardToken, AccountingToken, FixedPointMathLib} from "../../src/the-rewarder/TheRewarderPool.sol";
 import "./Attacker.sol";
 
-contract TheRewarderTest is Test{
+contract TheRewarderTest is Test {
     using FixedPointMathLib for uint256;
     uint256 constant TOKENS_IN_LENDER_POOL = 1_000_000e18;
     Util util = new Util();
@@ -26,14 +26,14 @@ contract TheRewarderTest is Test{
     DamnValuableToken liquidityToken;
     FlashLoanerPool flashLoanPool;
 
-    function setUp() public{
+    function setUp() public {
         users = util.createUsers(4);
-        
+
         alice = users[0];
         bob = users[1];
         charlie = users[2];
         david = users[3];
-        
+
         address payable[] memory someUsers = util.createUsers(2);
         deployer = someUsers[0];
         player = someUsers[1];
@@ -53,10 +53,15 @@ contract TheRewarderTest is Test{
         uint256 snapShotRole = accountingToken.SNAPSHOT_ROLE();
         uint256 burnerRole = accountingToken.BURNER_ROLE();
 
-        assertTrue(accountingToken.hasAllRoles(address(rewarderPool), mintRole | snapShotRole | burnerRole));
+        assertTrue(
+            accountingToken.hasAllRoles(
+                address(rewarderPool),
+                mintRole | snapShotRole | burnerRole
+            )
+        );
 
         uint256 depositAmount = 100e18;
-        for (uint256 i=0;i < users.length; i++){
+        for (uint256 i = 0; i < users.length; i++) {
             liquidityToken.transfer(users[i], depositAmount);
             vm.startPrank(users[i]);
             liquidityToken.approve(address(rewarderPool), depositAmount);
@@ -69,34 +74,37 @@ contract TheRewarderTest is Test{
         vm.warp(block.timestamp + 5 days);
 
         uint256 rewardInRound = rewarderPool.REWARDS();
-        for (uint256 i=0; i<users.length; i++){
+        for (uint256 i = 0; i < users.length; i++) {
             vm.startPrank(users[i]);
             rewarderPool.distributeRewards();
-            assertEq(rewardToken.balanceOf(users[i]), rewardInRound.rawDiv(users.length));
+            assertEq(
+                rewardToken.balanceOf(users[i]),
+                rewardInRound.rawDiv(users.length)
+            );
             vm.stopPrank();
         }
         assertEq(rewardToken.totalSupply(), rewardInRound);
-        assertEq(liquidityToken.balanceOf(address(player)),0);
-        assertEq(rewarderPool.roundNumber(),2);
+        assertEq(liquidityToken.balanceOf(address(player)), 0);
+        assertEq(rewarderPool.roundNumber(), 2);
     }
 
-    function testExploit() public{
+    function testExploit() public {
         /** CODE YOUR SOLUTION HERE */
         vm.startPrank(player);
-        vm.warp(block.timestamp + 5 days);
-        Attacker attacker = new Attacker(address(flashLoanPool), address(rewarderPool), address(liquidityToken), address(rewardToken));
-        attacker.attack(TOKENS_IN_LENDER_POOL);
+        // vm.warp(block.timestamp + 5 days);
         vm.stopPrank();
         validation();
     }
 
-    function validation() public{
-        assertEq(rewarderPool.roundNumber(),3);
-        for (uint256 i=0; i< users.length; i++){
+    function validation() public {
+        assertEq(rewarderPool.roundNumber(), 3);
+        for (uint256 i = 0; i < users.length; i++) {
             vm.startPrank(users[i]);
             rewarderPool.distributeRewards();
             uint256 userReward = rewardToken.balanceOf(users[i]);
-            uint256 userDelta = userReward.rawSub(rewarderPool.REWARDS().rawDiv(users.length));
+            uint256 userDelta = userReward.rawSub(
+                rewarderPool.REWARDS().rawDiv(users.length)
+            );
             assertTrue(userDelta < 1e16);
             vm.stopPrank();
         }
@@ -112,6 +120,9 @@ contract TheRewarderTest is Test{
 
         // balance of dvt tokens is player and lending pool hasn't changed
         assertEq(liquidityToken.balanceOf(address(player)), 0);
-        assertEq(liquidityToken.balanceOf(address(flashLoanPool)), TOKENS_IN_LENDER_POOL);
+        assertEq(
+            liquidityToken.balanceOf(address(flashLoanPool)),
+            TOKENS_IN_LENDER_POOL
+        );
     }
 }

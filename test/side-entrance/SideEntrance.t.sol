@@ -6,7 +6,7 @@ import "../Util.sol";
 import "../../src/side-entrance/SideEntranceLenderPool.sol";
 import "./Attacker.sol";
 
-contract SideEntranceTest is Test{
+contract SideEntranceTest is Test {
     uint256 internal constant ETHER_IN_POOL = 1_000e18;
     uint256 internal constant PLAYER_INITIAL_ETH_BALANCE = 1e18;
     Util util = new Util();
@@ -31,9 +31,6 @@ contract SideEntranceTest is Test{
         /** CODE YOUR SOLUTION HERE */
         /* */
         vm.startPrank(player);
-        Attacker attacker = new Attacker(address(pool));
-        attacker.attack(ETHER_IN_POOL);
-        attacker.withdraw();
         vm.stopPrank();
         validation();
     }
